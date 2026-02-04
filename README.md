@@ -1,6 +1,6 @@
-# 🪑 Sistema CRM - Móveis Planejados
+# 🪑 Saas de Orçamento - Móveis Planejados
 
-Sistema profissional de CRM para gerenciamento de orçamentos de móveis planejados, com chat inteligente e interface moderna.
+Saas para gerenciamento de orçamentos de móveis planejados, com chat inteligente e interface moderna.
 
 ## 🚀 Tecnologias
 

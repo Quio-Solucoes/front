@@ -220,10 +220,6 @@ O sistema é totalmente responsivo e funciona em:
 
 Este projeto é proprietário e confidencial.
 
-## 👥 Suporte
 
-Para dúvidas ou suporte, entre em contato com a equipe de desenvolvimento.
 
----
 
-**Desenvolvido com ❤️ para otimizar o processo de vendas de móveis planejados**

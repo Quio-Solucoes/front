@@ -1,40 +1,44 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import Projects from './pages/Projects';
-import Chat from './pages/Chat';
-import './styles/global.css';
+import { Routes, Route } from "react-router-dom";
+import { PrivateLayout } from "./components/layouts/PrivateLayout";
+import ProtectedRoute from "./components/ProtectedRoutes";
+import { LoginPageComponent } from "./components/Login";
+import { HomePage } from "./pages/HomePage";
+import { IaPage } from "./pages/IaPage";
+import { SplashComponent } from "./components/Splash";
 
-const App: React.FC = () => {
+const LoginPage = () => <LoginPageComponent />;
+const RegisterPage = () => <h1>Registro (Rota Pública)</h1>;
+const SplashPage = () => <SplashComponent />;
+
+const HomePageComponent = () => <HomePage />;
+const FoldersPage = () => <h1>Perfil (Rota Privada)</h1>;
+const IaPageComponent = () => <IaPage />;
+
+function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Home />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="chat" element={<Chat />} />
-            <Route path="settings" element={<div style={{ padding: '2rem' }}>Configurações em breve...</div>} />
-          </Route>
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/splash" element={<SplashPage />} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      <Route element={<ProtectedRoute />}>
+        <Route
+          path="/*"
+          element={
+            <PrivateLayout>
+              <Routes>
+                <Route path="/home" element={<HomePageComponent />} />
+                <Route path="/folders" element={<FoldersPage />} />
+                <Route path="/ia" element={<IaPageComponent />} />
+              </Routes>
+            </PrivateLayout>
+          }
+        />
+      </Route>
+
+      <Route path="*" element={<h1>404 - Não Encontrado</h1>} />
+    </Routes>
   );
-};
+}
 
 export default App;

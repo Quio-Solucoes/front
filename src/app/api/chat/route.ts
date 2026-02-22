@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveBackendBaseUrl, resolveBackendChatUrl } from "@/shared/config/backend";
 
 type ChatRequest = {
   message?: string;
@@ -19,8 +20,8 @@ type ChatResponse = {
   backend_base_url?: string;
 };
 
-const BACKEND_CHAT_URL = process.env.BACKEND_CHAT_URL ?? "http://localhost:5001/chat";
-const BACKEND_BASE_URL = new URL(BACKEND_CHAT_URL).origin;
+const BACKEND_CHAT_URL = resolveBackendChatUrl();
+const BACKEND_BASE_URL = resolveBackendBaseUrl();
 
 export async function POST(request: Request) {
   const body = (await request.json()) as ChatRequest;

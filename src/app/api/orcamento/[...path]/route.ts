@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { resolveBackendBaseUrl } from "@/shared/config/backend";
 
-const BACKEND_CHAT_URL = process.env.BACKEND_CHAT_URL ?? "http://localhost:5001/chat";
-const BACKEND_BASE_URL = new URL(BACKEND_CHAT_URL).origin;
+const BACKEND_BASE_URL = resolveBackendBaseUrl();
 
 type RouteContext = {
   params: Promise<{ path: string[] }>;

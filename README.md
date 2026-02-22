@@ -76,7 +76,7 @@ O frontend usa rotas internas (`/api/*`) como camada BFF/proxy.
 ### Chat
 
 - endpoint interno: `POST /api/chat`
-- backend alvo: `BACKEND_CHAT_URL` (padrao `http://localhost:5001/chat`)
+- backend alvo: resolvido por configuracao de ambiente (local/aws)
 
 Payload esperado (frontend -> backend):
 
@@ -104,7 +104,7 @@ Se o backend estiver indisponivel, existe fallback controlado na rota interna `/
 ### Orcamento
 
 - endpoint interno: `/api/orcamento/[...path]`
-- proxy para backend: `${origin(BACKEND_CHAT_URL)}/orcamento/...`
+- proxy para backend: `${origin(backend_chat_url_resolvido)}/orcamento/...`
 
 Fluxos suportados na sidebar:
 
@@ -158,13 +158,32 @@ Aplicacao: `http://localhost:3000`
 
 ## Variaveis de Ambiente
 
-Crie `.env.local` na raiz (opcional):
+A resolucao do backend segue esta ordem de prioridade:
+
+1. `BACKEND_CHAT_URL` (override explicito)
+2. `BACKEND_PROVIDER=aws` usa `BACKEND_CHAT_URL_AWS` (fallback para local se ausente)
+3. `BACKEND_PROVIDER=local` usa `BACKEND_CHAT_URL_LOCAL`
+4. fallback final: `http://localhost:5001/chat`
+
+### Exemplo para desenvolvimento local
 
 ```env
-BACKEND_CHAT_URL=http://localhost:5001/chat
+BACKEND_PROVIDER=local
+BACKEND_CHAT_URL_LOCAL=http://localhost:5001/chat
 ```
 
-Se nao informado, esse valor padrao ja e utilizado.
+### Exemplo para main/producao (AWS)
+
+```env
+BACKEND_PROVIDER=aws
+BACKEND_CHAT_URL_AWS=https://seu-dominio-ou-api-gateway/chat
+```
+
+### Override direto (qualquer ambiente)
+
+```env
+BACKEND_CHAT_URL=https://endpoint-especifico/chat
+```
 
 ## Scripts Disponiveis
 

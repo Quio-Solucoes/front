@@ -8,17 +8,24 @@ function normalizeProvider(value?: string): BackendProvider {
   return value?.toLowerCase() === "aws" ? "aws" : "local";
 }
 
+function normalizeChatUrlFromBase(value: string): string {
+  const trimmed = value.trim().replace(/\/+$/, "");
+  return /\/chat$/i.test(trimmed) ? trimmed : `${trimmed}/chat`;
+}
+
 export function resolveBackendChatUrl(): string {
   const isVercelProduction = process.env.VERCEL_ENV === "production";
-  const awsUrl = process.env.NEXT_PUBLIC_AMAZON_API_URL;
+  const amazonApiUrl = process.env.AMAZON_API_URL;
 
   if (isVercelProduction) {
-    if (!awsUrl) {
-      throw new Error("Missing NEXT_PUBLIC_AMAZON_API_URL in Vercel production");
+    if (!amazonApiUrl) {
+      throw new Error("Missing AMAZON_API_URL in Vercel production");
     }
 
-    return awsUrl;
+    return normalizeChatUrlFromBase(amazonApiUrl);
   }
+
+  if (amazonApiUrl) return normalizeChatUrlFromBase(amazonApiUrl);
 
   const explicitUrl = process.env.BACKEND_CHAT_URL;
   if (explicitUrl) return explicitUrl;
@@ -27,7 +34,7 @@ export function resolveBackendChatUrl(): string {
   const localUrl = process.env.BACKEND_CHAT_URL_LOCAL ?? DEFAULT_LOCAL_CHAT_URL;
 
   if (provider === "aws") {
-    return awsUrl ?? localUrl;
+    return localUrl;
   }
 
   return localUrl;

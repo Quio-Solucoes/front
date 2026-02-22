@@ -26,7 +26,7 @@ type OpcaoAberta = {
 
 function resolvePdfUrl(baseUrl: string | null, sessionId: string): string | null {
   if (!baseUrl) return null;
-  return `${baseUrl.replace(/\/$/, "")}/download-pdf/${encodeURIComponent(sessionId)}`;
+  return `/api/proxy/download-pdf/${encodeURIComponent(sessionId)}`;
 }
 
 export function SidebarOrcamento({ sessionId, open, onToggle }: Readonly<SidebarOrcamentoProps>) {

@@ -23,6 +23,19 @@ type ChatResponse = {
 const BACKEND_CHAT_URL = resolveBackendChatUrl();
 const BACKEND_BASE_URL = resolveBackendBaseUrl();
 
+function toProxyDownloadUrl(downloadUrl?: string): string | undefined {
+  if (!downloadUrl) return undefined;
+
+  let pathWithQuery = downloadUrl;
+
+  if (/^https?:\/\//i.test(downloadUrl)) {
+    const parsed = new URL(downloadUrl);
+    pathWithQuery = `${parsed.pathname}${parsed.search}`;
+  }
+
+  return `/api/proxy/${pathWithQuery.replace(/^\//, "")}`;
+}
+
 export async function POST(request: Request) {
   const body = (await request.json()) as ChatRequest;
   const message = body.message?.trim();
@@ -47,6 +60,7 @@ export async function POST(request: Request) {
     const data = (await response.json()) as ChatResponse;
     return NextResponse.json({
       ...data,
+      download_url: toProxyDownloadUrl(data.download_url) ?? data.download_url,
       backend_base_url: data.backend_base_url ?? BACKEND_BASE_URL,
     });
   } catch {

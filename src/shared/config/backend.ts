@@ -14,7 +14,7 @@ export function resolveBackendChatUrl(): string {
 
   const provider = normalizeProvider(process.env.BACKEND_PROVIDER);
   const localUrl = process.env.BACKEND_CHAT_URL_LOCAL ?? DEFAULT_LOCAL_CHAT_URL;
-  const awsUrl = process.env.AMAZON_API_URL;
+  const awsUrl = process.env.NEXT_PUBLIC_AMAZON_API_URL;
 
   if (provider === "aws") {
     return awsUrl ?? localUrl;

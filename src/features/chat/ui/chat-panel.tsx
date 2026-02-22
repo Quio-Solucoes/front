@@ -145,7 +145,6 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
         <header className="page-header">
           <div>
             <h1 className="page-title">Assistente de orçamentos</h1>
-            <p className="page-subtitle">Projeto: {projectId}</p>
           </div>
         </header>
 

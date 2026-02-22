@@ -1,0 +1,50 @@
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--space-md);
+}
+
+.row-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.text-link {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.empty-projects-state {
+  min-height: 45vh;
+  display: grid;
+  place-items: center;
+}
+
+.empty-projects-state .card {
+  width: min(420px, 100%);
+  text-align: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  padding: var(--space-xl);
+}
+
+.modal-card {
+  width: min(560px, 100%);
+  display: grid;
+  gap: var(--space-md);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}

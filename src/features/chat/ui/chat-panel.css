@@ -1,0 +1,103 @@
+.chat-card {
+  display: grid;
+  gap: 14px;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-height: 58vh;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.message-row {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.message-row.user {
+  justify-content: flex-end;
+}
+
+.message-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  background: var(--surface-soft);
+}
+
+.message-bubble {
+  max-width: min(70ch, 100%);
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+}
+
+.message-content {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.message-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.message-row.user .message-bubble {
+  background: color-mix(in srgb, var(--brand) 25%, var(--surface-soft));
+  border-color: color-mix(in srgb, var(--brand) 50%, var(--line));
+}
+
+.options {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chat-option-tag {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+.pdf-download-button {
+  margin-top: var(--space-sm);
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--line));
+}
+
+.loading-line {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.chat-form {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+}
+
+.voice-button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.voice-button.listening {
+  background: color-mix(in srgb, var(--danger) 16%, var(--surface));
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
+  color: var(--danger);
+}

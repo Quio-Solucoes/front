@@ -48,6 +48,7 @@ function parseMessageContent(content: string): ContentBlock[] {
 }
 
 function resolveDownloadUrl(downloadUrl: string, backendBaseUrl?: string): string {
+  if (downloadUrl.startsWith("/")) return downloadUrl;
   if (/^https?:\/\//i.test(downloadUrl)) return downloadUrl;
   if (backendBaseUrl) return `${backendBaseUrl.replace(/\/$/, "")}/${downloadUrl.replace(/^\//, "")}`;
   return downloadUrl;

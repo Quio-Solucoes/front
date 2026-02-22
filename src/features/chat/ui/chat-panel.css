@@ -63,13 +63,37 @@
 }
 
 .chat-option-tag {
+  background: var(--surface);
+  color: var(--text);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
+  transition:
+    background var(--motion-fast) var(--motion-easing),
+    color var(--motion-fast) var(--motion-easing),
+    border-color var(--motion-fast) var(--motion-easing);
+}
+
+.chat-option-tag:hover:not(:disabled) {
+  background: var(--surface-soft);
+  color: var(--brand-strong);
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
 }
 
 .pdf-download-button {
   margin-top: var(--space-sm);
+  background: var(--surface);
+  color: var(--text);
   border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--line));
+  transition:
+    background var(--motion-fast) var(--motion-easing),
+    color var(--motion-fast) var(--motion-easing),
+    border-color var(--motion-fast) var(--motion-easing);
+}
+
+.pdf-download-button:hover:not(:disabled) {
+  background: var(--surface-soft);
+  color: var(--brand-strong);
+  border-color: color-mix(in srgb, var(--brand) 50%, var(--line));
 }
 
 .loading-line {

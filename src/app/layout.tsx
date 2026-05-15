@@ -7,7 +7,6 @@ import "@/shared/ui/styles/primitives.css";
 import "@/shared/ui/styles/app-shell.css";
 import "@/shared/ui/styles/page.css";
 import "@/features/auth/ui/login-form.css";
-import "@/features/home/ui/home-dashboard.css";
 import "@/features/projects/ui/projects.css";
 import "@/features/chat/ui/chat-panel.css";
 import "@/features/chat/ui/product-configurator.css";

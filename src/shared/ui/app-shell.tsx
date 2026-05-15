@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   FolderKanban,
-  Home,
   LogOut,
   Menu,
   MessageCircle,
@@ -23,8 +22,7 @@ type AppShellProps = {
 };
 
 const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/projects", label: "Projetos", icon: FolderKanban },
+  { href: "/", label: "Projetos", icon: FolderKanban },
   { href: "/chat", label: "Chat", icon: MessageCircle },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

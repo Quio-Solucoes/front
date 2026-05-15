@@ -25,8 +25,9 @@ export function ProjectsList() {
       <div className="project-grid">
         {projects.map((project) => (
           <Card key={project.id}>
-            <h3>{project.name}</h3>
-            <p>{project.client || "Sem cliente"}</p>
+            <h3>{project.client || project.name}</h3>
+            <p>{project.architect ? `Arquiteto: ${project.architect}` : "Sem arquiteto"}</p>
+            <p>{project.environment ? `Ambiente: ${project.environment}` : "Ambiente: não definido"}</p>
             <small>Status: {project.status}</small>
             <Link className="text-link" href={`/chat/${project.id}`}>
               Abrir conversa

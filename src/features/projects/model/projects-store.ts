@@ -5,8 +5,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { Project } from "@/entities/project";
 
 type CreateProjectInput = {
-  name: string;
-  client?: string;
+  architect: string;
+  client: string;
 };
 
 type ProjectsState = {
@@ -16,6 +16,7 @@ type ProjectsState = {
   createProject: (input: CreateProjectInput) => Project | null;
   deleteProject: (projectId: string) => void;
   updateProjectStatus: (projectId: string, status: Project["status"]) => void;
+  setProjectEnvironment: (projectId: string, environment: string) => void;
 };
 
 export const useProjectsStore = create<ProjectsState>()(
@@ -27,14 +28,16 @@ export const useProjectsStore = create<ProjectsState>()(
         set({ hasHydrated: value });
       },
       createProject(input) {
-        const name = input.name.trim();
-        if (!name) return null;
+        const architect = input.architect.trim();
+        const client = input.client.trim();
+        if (!architect || !client) return null;
 
         const now = new Date().toISOString();
         const project: Project = {
           id: crypto.randomUUID(),
-          name,
-          client: input.client?.trim() || undefined,
+          name: `${client} • ${architect}`,
+          architect,
+          client,
           createdAt: now,
           updatedAt: now,
           status: "draft",
@@ -51,6 +54,16 @@ export const useProjectsStore = create<ProjectsState>()(
         set({
           projects: get().projects.map((project) =>
             project.id === projectId ? { ...project, status, updatedAt: now } : project,
+          ),
+        });
+      },
+      setProjectEnvironment(projectId, environment) {
+        const value = environment.trim();
+        if (!value) return;
+        const now = new Date().toISOString();
+        set({
+          projects: get().projects.map((project) =>
+            project.id === projectId ? { ...project, environment: value, updatedAt: now } : project,
           ),
         });
       },

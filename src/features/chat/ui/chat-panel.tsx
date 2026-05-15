@@ -1,235 +1,155 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { Bot, Download, Mic, Send, User } from "lucide-react";
-import { ChatMessage } from "@/entities/chat";
+import { useMemo, useState } from "react";
+import { Bot, Layers } from "lucide-react";
 import { SidebarOrcamento } from "@/features/orcamento";
+import { useProjectsStore } from "@/features/projects";
 import { Button, Card, Input } from "@/shared/ui";
-import { sendMessage } from "../api/send-message";
-import { useVoice } from "../lib/use-voice";
-import { useChatStore } from "../model/chat-store";
+import { ProductConfigurator, type ItemEmEdicao } from "./product-configurator";
 
 type ChatPanelProps = {
   projectId: string;
 };
 
-type ContentBlock =
-  | { type: "text"; value: string }
-  | { type: "list"; items: string[] };
-
-function parseMessageContent(content: string): ContentBlock[] {
-  const lines = content
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-
-  const blocks: ContentBlock[] = [];
-  let listBuffer: string[] = [];
-
-  const flushList = () => {
-    if (listBuffer.length === 0) return;
-    blocks.push({ type: "list", items: listBuffer });
-    listBuffer = [];
-  };
-
-  for (const line of lines) {
-    if (/^[-*\u2022]\s+/.test(line)) {
-      listBuffer.push(line.replace(/^[-*\u2022]\s+/, ""));
-      continue;
-    }
-
-    flushList();
-    blocks.push({ type: "text", value: line });
-  }
-
-  flushList();
-  return blocks;
-}
-
-function resolveDownloadUrl(downloadUrl: string, backendBaseUrl?: string): string {
-  if (downloadUrl.startsWith("/")) return downloadUrl;
-  if (/^https?:\/\//i.test(downloadUrl)) return downloadUrl;
-  if (backendBaseUrl) return `${backendBaseUrl.replace(/\/$/, "")}/${downloadUrl.replace(/^\//, "")}`;
-  return downloadUrl;
-}
-
-function MessageContent({ content }: Readonly<{ content: string }>) {
-  const blocks = parseMessageContent(content);
-
-  return (
-    <div className="message-content">
-      {blocks.map((block, index) =>
-        block.type === "text" ? (
-          <p key={`${block.type}-${index}`}>{block.value}</p>
-        ) : (
-          <ul key={`${block.type}-${index}`} className="message-list">
-            {block.items.map((item, itemIndex) => (
-              <li key={`${item}-${itemIndex}`}>{item}</li>
-            ))}
-          </ul>
-        ),
-      )}
-    </div>
-  );
-}
+const VISTAS = [
+  { id: "frontal", label: "Vista A" },
+  { id: "lateral_esq", label: "Vista B" },
+  { id: "lateral_dir", label: "Vista C" },
+  { id: "fundos", label: "Vista D" },
+  { id: "interna", label: "Teto" },
+];
 
 export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
-  const ensureProject = useChatStore((state) => state.ensureProject);
-  const appendMessage = useChatStore((state) => state.appendMessage);
-  const messagesByProject = useChatStore((state) => state.messagesByProject);
+  const projects = useProjectsStore((state) => state.projects);
+  const project = useMemo(() => projects.find((p) => p.id === projectId), [projects, projectId]);
+  const setProjectEnvironment = useProjectsStore((state) => state.setProjectEnvironment);
+  const environmentSuggestions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          projects
+            .map((p) => p.environment)
+            .filter((v): v is string => Boolean(v && v.trim())),
+        ),
+      ).sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [projects],
+  );
+
   const [isOrcamentoOpen, setIsOrcamentoOpen] = useState(true);
-  const [input, setInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [vistaAtual, setVistaAtual] = useState("frontal");
+  const [itemEmEdicao, setItemEmEdicao] = useState<ItemEmEdicao>(null);
+  const [ambiente, setAmbiente] = useState("");
 
-  const messages = useMemo(() => messagesByProject[projectId] ?? [], [messagesByProject, projectId]);
-
-  useEffect(() => {
-    ensureProject(projectId);
-  }, [ensureProject, projectId]);
-
-  const mutation = useMutation({
-    mutationFn: async (message: string) => sendMessage(message, projectId),
-    onSuccess(data) {
-      appendMessage(projectId, {
-        id: crypto.randomUUID(),
-        content: data.response,
-        sender: "bot",
-        timestamp: new Date().toISOString(),
-        options: data.options,
-        pdfReady: data.pdf_ready,
-        downloadUrl: data.download_url,
-        backendBaseUrl: data.backend_base_url,
-      });
-      window.dispatchEvent(
-        new CustomEvent("orcamento:refresh", {
-          detail: { sessionId: projectId },
-        }),
-      );
-    },
-    onError() {
-      appendMessage(projectId, {
-        id: crypto.randomUUID(),
-        content: "Erro ao processar mensagem.",
-        sender: "bot",
-        timestamp: new Date().toISOString(),
-      });
-    },
-  });
-
-  const submit = (rawText?: string) => {
-    const text = (rawText ?? input).trim();
-    if (!text || mutation.isPending) return;
-
-    const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      content: text,
-      sender: "user",
-      timestamp: new Date().toISOString(),
-    };
-
-    appendMessage(projectId, userMessage);
-    setInput("");
-    mutation.mutate(text);
-  };
-
-  const { isListening, startListening } = useVoice((text) => submit(text));
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, mutation.isPending]);
+  const hasEnvironment = Boolean(project?.environment?.trim());
 
   return (
     <div className={`chat-with-orcamento${isOrcamentoOpen ? "" : " collapsed"}`}>
       <div className="stack">
-        <header className="page-header">
-          <div>
-            <h1 className="page-title">Assistente de orçamentos</h1>
+        <header className="page-header chat-page-header">
+          <div className="chat-header-info">
+            <Bot size={22} />
+            <div>
+              <h1 className="page-title">Orçamento</h1>
+              <p className="page-subtitle">
+                {project
+                  ? [project.client ? `Cliente: ${project.client}` : null, project.architect ? `Arquiteto: ${project.architect}` : null]
+                      .filter(Boolean)
+                      .join(" • ") || "Conversa"
+                  : "Carregando conversa..."}
+              </p>
+              <span className="chat-status">{hasEnvironment ? `Ambiente: ${project?.environment}` : "Defina o ambiente para começar"}</span>
+            </div>
           </div>
+
+          {hasEnvironment && (
+            <div className="vista-selector" aria-label="Selecionar vista">
+              <Layers size={14} />
+              <span className="vista-label">Vista:</span>
+
+              <nav className="vista-nav" aria-label="Vistas">
+                {VISTAS.map((v) => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    className={`vista-tab${vistaAtual === v.id ? " active" : ""}`}
+                    onClick={() => setVistaAtual(v.id)}
+                    aria-pressed={vistaAtual === v.id}
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </nav>
+
+              <select
+                value={vistaAtual}
+                onChange={(e) => setVistaAtual(e.target.value)}
+                className="vista-select vista-select--mobile"
+              >
+                {VISTAS.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </header>
 
-        <Card className="chat-card">
-          <div className="messages">
-            {messages.map((message) => (
-              <div key={message.id} className={`message-row ${message.sender}`}>
-                <div className="message-icon">
-                  {message.sender === "bot" ? <Bot size={16} /> : <User size={16} />}
-                </div>
-                <div className="message-bubble">
-                  <MessageContent content={message.content} />
-                  {message.pdfReady && message.downloadUrl && (
-                    <Button
-                      variant="secondary"
-                      className="pdf-download-button"
-                      onClick={() =>
-                        window.open(
-                          resolveDownloadUrl(message.downloadUrl!, message.backendBaseUrl),
-                          "_blank",
-                          "noopener,noreferrer",
-                        )
-                      }
-                    >
-                      <Download size={16} />
-                      Baixar PDF
-                    </Button>
-                  )}
-                  {message.options && message.options.length > 0 && (
-                    <div className="options">
-                      {message.options.map((option) => (
-                        <Button
-                          key={option.id}
-                          variant="secondary"
-                          className="chat-option-tag"
-                          onClick={() => submit(option.id)}
-                          disabled={mutation.isPending}
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {mutation.isPending && <p className="loading-line">Assistente digitando...</p>}
-            <div ref={messagesEndRef} />
-          </div>
+        {!project ? (
+          <Card>
+            <h2 className="page-title">Conversa não encontrada</h2>
+            <p className="page-subtitle">Volte para projetos e crie uma nova conversa.</p>
+          </Card>
+        ) : !hasEnvironment ? (
+          <Card className="environment-card">
+            <h2 className="page-title">Qual ambiente vamos orçar?</h2>
+            <p className="page-subtitle">Ex.: Cozinha, Sala, Quarto, Escritório.</p>
 
-          <form
-            className="chat-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              submit();
-            }}
-          >
-            <Input
-              placeholder="Digite sua mensagem"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              disabled={mutation.isPending}
-            />
-            <button
-              className={`voice-button${isListening ? " listening" : ""}`}
-              onClick={startListening}
-              type="button"
-              disabled={mutation.isPending}
-              aria-label="Iniciar reconhecimento de voz"
+            <form
+              className="environment-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setProjectEnvironment(projectId, ambiente);
+                setAmbiente("");
+              }}
             >
-              <Mic size={16} />
-            </button>
-            <Button type="submit" disabled={mutation.isPending}>
-              <Send size={16} />
-              Enviar
-            </Button>
-          </form>
-        </Card>
+              <Input
+                placeholder="Digite o ambiente"
+                value={ambiente}
+                onChange={(event) => setAmbiente(event.target.value)}
+                list="environment-suggestions"
+              />
+              <datalist id="environment-suggestions">
+                {environmentSuggestions.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+                {["Cozinha", "Sala", "Quarto", "Banheiro", "Escritório", "Lavanderia"].map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+              <div className="environment-actions">
+                <Button type="submit">Continuar</Button>
+              </div>
+            </form>
+          </Card>
+        ) : (
+          <ProductConfigurator
+            sessionId={projectId}
+            vistaAtual={vistaAtual}
+            itemEmEdicao={itemEmEdicao}
+            onEdicaoConcluida={() => setItemEmEdicao(null)}
+          />
+        )}
       </div>
 
-      <SidebarOrcamento
-        sessionId={projectId}
-        open={isOrcamentoOpen}
-        onToggle={() => setIsOrcamentoOpen((prev) => !prev)}
-      />
+      {project && hasEnvironment && (
+        <SidebarOrcamento
+          sessionId={projectId}
+          open={isOrcamentoOpen}
+          onToggle={() => setIsOrcamentoOpen((prev) => !prev)}
+          onStartEdit={(payload) => setItemEmEdicao(payload)}
+        />
+      )}
     </div>
   );
 }

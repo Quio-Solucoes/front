@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
+import { resolveBackendBaseUrl } from "@/shared/config/backend";
 
 function resolveProxyBaseUrl(): string {
   const base = process.env.AMAZON_API_URL;
 
-  if (!base) {
-    throw new Error("Missing AMAZON_API_URL for proxy route");
-  }
+  if (base) return new URL(base).origin;
 
-  return new URL(base).origin;
+  // Dev/local fallback: proxy to the backend inferred from BACKEND_* env vars.
+  return resolveBackendBaseUrl();
 }
 
 export async function GET(

@@ -21,7 +21,7 @@ export function HomeDashboard() {
   const createProject = useProjectsStore((state) => state.createProject);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [name, setName] = useState("");
+  const [architect, setArchitect] = useState("");
   const [client, setClient] = useState("");
 
   const summary = useMemo(() => {
@@ -39,6 +39,18 @@ export function HomeDashboard() {
   }, [projects]);
 
   const recentProjects = useMemo(() => projects.slice(0, 5), [projects]);
+
+  const suggestions = useMemo(() => {
+    const architects = Array.from(
+      new Set(projects.map((p) => p.architect).filter((v): v is string => Boolean(v && v.trim()))),
+    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+    const clients = Array.from(
+      new Set(projects.map((p) => p.client).filter((v): v is string => Boolean(v && v.trim()))),
+    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+    return { architects, clients };
+  }, [projects]);
 
   return (
     <div className="stack">
@@ -117,8 +129,8 @@ export function HomeDashboard() {
                   type="button"
                 >
                   <div>
-                    <strong>{project.name}</strong>
-                    <p>{project.client || "Sem cliente"}</p>
+                    <strong>{project.client || project.name}</strong>
+                    <p>{project.architect ? `Arquiteto: ${project.architect}` : "Sem arquiteto"}</p>
                   </div>
                   <span>{project.status}</span>
                 </button>
@@ -132,29 +144,42 @@ export function HomeDashboard() {
         <div className="modal-overlay" onClick={() => setIsCreateOpen(false)} role="presentation">
           <Card className="modal-card" onClick={(event) => event.stopPropagation()}>
             <h2 className="page-title">Novo projeto</h2>
-            <p className="page-subtitle">Preencha os dados para criar um projeto.</p>
+            <p className="page-subtitle">Selecione (ou cadastre) arquiteto e cliente para criar a conversa.</p>
 
             <form
               className="stack"
               onSubmit={(event) => {
                 event.preventDefault();
-                const created = createProject({ name, client });
+                const created = createProject({ architect, client });
                 if (!created) return;
-                setName("");
+                setArchitect("");
                 setClient("");
                 setIsCreateOpen(false);
+                router.push(`/chat/${created.id}`);
               }}
             >
               <Input
-                placeholder="Nome do projeto"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
+                placeholder="Arquiteto"
+                value={architect}
+                onChange={(event) => setArchitect(event.target.value)}
+                list="architect-suggestions-home"
               />
               <Input
-                placeholder="Cliente (opcional)"
+                placeholder="Cliente"
                 value={client}
                 onChange={(event) => setClient(event.target.value)}
+                list="client-suggestions-home"
               />
+              <datalist id="architect-suggestions-home">
+                {suggestions.architects.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+              <datalist id="client-suggestions-home">
+                {suggestions.clients.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
               <div className="modal-actions">
                 <Button type="button" variant="secondary" onClick={() => setIsCreateOpen(false)}>
                   Cancelar

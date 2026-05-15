@@ -1,34 +1,16 @@
-export type ComponenteOrcamento = {
-  nome: string;
-  categoria: string;
+export type ItemOrcado = {
+  item_id: number;
+  produto_id?: number;
+  produto: string;
+  dimensao: string;
+  cor: string;
   quantidade: number;
-  preco: number;
+  preco_unitario: number;
   subtotal: number;
 };
 
-export type MovelOrcado = {
-  id: number;
-  nome: string;
-  dimensoes: string;
-  material: string;
-  cor: string;
-  total: number;
-  componentes: ComponenteOrcamento[];
-};
-
-export type OpcaoComponente = {
-  id: string;
-  nome: string;
-  preco_unitario: number;
-};
-
-export type OpcoesComponenteResponse = {
-  opcoes: OpcaoComponente[];
-  backend_base_url?: string;
-};
-
 export type OrcamentoSnapshot = {
-  moveis: MovelOrcado[];
+  vistas: Record<string, ItemOrcado[]>;
   total: number;
   finalizado: boolean;
   backend_base_url?: string;

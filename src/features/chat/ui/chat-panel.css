@@ -3,6 +3,39 @@
   gap: 14px;
 }
 
+.chat-header-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.chat-status {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: color-mix(in srgb, var(--brand) 70%, white);
+  border-radius: var(--radius-pill);
+  animation: chat-status-pulse 2s infinite;
+}
+
+@keyframes chat-status-pulse {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
 .messages {
   display: flex;
   flex-direction: column;
@@ -10,15 +43,28 @@
   max-height: 58vh;
   overflow: auto;
   padding-right: 6px;
+  scroll-behavior: smooth;
 }
 
 .message-row {
   display: flex;
   gap: var(--space-sm);
+  animation: message-appear 0.22s var(--motion-easing);
 }
 
 .message-row.user {
   justify-content: flex-end;
+}
+
+@keyframes message-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message-icon {
@@ -36,6 +82,8 @@
   border: 1px solid var(--line);
   padding: var(--space-md);
   border-radius: var(--radius-md);
+  display: grid;
+  gap: var(--space-sm);
 }
 
 .message-content {
@@ -53,6 +101,12 @@
 .message-row.user .message-bubble {
   background: color-mix(in srgb, var(--brand) 25%, var(--surface-soft));
   border-color: color-mix(in srgb, var(--brand) 50%, var(--line));
+}
+
+.message-timestamp {
+  justify-self: end;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
 }
 
 .options {
@@ -101,6 +155,46 @@
   font-size: var(--font-size-sm);
 }
 
+.typing-row .message-bubble {
+  max-width: fit-content;
+}
+
+.typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text) 40%, transparent);
+  animation: typing-bounce 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
 .chat-form {
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -124,4 +218,104 @@
   background: color-mix(in srgb, var(--danger) 16%, var(--surface));
   border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
   color: var(--danger);
+}
+
+.chat-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.vista-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.vista-label {
+  white-space: nowrap;
+}
+
+.vista-nav {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.vista-tab {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--motion-fast) var(--motion-easing),
+    color var(--motion-fast) var(--motion-easing);
+}
+
+.vista-tab:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.vista-tab.active {
+  background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+  color: var(--brand-strong);
+}
+
+.vista-tab:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 55%, white);
+  outline-offset: 2px;
+}
+
+.vista-select {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+}
+
+.vista-select--mobile {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .vista-label {
+    display: none;
+  }
+
+  .vista-nav {
+    display: none;
+  }
+
+  .vista-select--mobile {
+    display: inline-flex;
+  }
+}
+
+.environment-card {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.environment-form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.environment-actions {
+  display: flex;
+  justify-content: flex-end;
 }

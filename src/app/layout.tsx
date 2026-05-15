@@ -10,6 +10,7 @@ import "@/features/auth/ui/login-form.css";
 import "@/features/home/ui/home-dashboard.css";
 import "@/features/projects/ui/projects.css";
 import "@/features/chat/ui/chat-panel.css";
+import "@/features/chat/ui/product-configurator.css";
 import "@/features/orcamento/ui/sidebar-orcamento.css";
 
 const sans = Inter({

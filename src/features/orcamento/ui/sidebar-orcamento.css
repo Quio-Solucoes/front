@@ -129,6 +129,13 @@
   font-size: var(--font-size-sm);
 }
 
+.item-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .edit-comp {
   justify-self: start;
   font-size: var(--font-size-xs);
@@ -158,6 +165,11 @@
 
 .delete {
   width: 100%;
+}
+
+.item-delete {
+  font-size: var(--font-size-xs);
+  padding: 6px 10px;
 }
 
 .orcamento-total {

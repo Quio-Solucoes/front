@@ -334,22 +334,29 @@ export function ProductConfigurator({
             </p>
             {carregandoVar ? (
               <p className="configurator-muted">Carregando opções...</p>
-            ) : variantes && variantes.dimensoes.length > 0 ? (
-              <div className="configurator-options">
-                {variantes.dimensoes.map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    className={`configurator-option${dimensaoSel === d ? " selected" : ""}`}
-                    onClick={() => setDimensaoSel(d)}
-                  >
-                    {dimensaoSel === d && <Check size={12} />}
-                    {d}
-                  </button>
-                ))}
-              </div>
             ) : (
-              <Input placeholder="Ex: 800x700x600" value={dimensaoSel} onChange={(e) => setDimensaoSel(e.target.value)} />
+              <>
+                {variantes && variantes.dimensoes.length > 0 && (
+                  <div className="configurator-options">
+                    {variantes.dimensoes.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        className={`configurator-option${dimensaoSel === d ? " selected" : ""}`}
+                        onClick={() => setDimensaoSel(d)}
+                      >
+                        {dimensaoSel === d && <Check size={12} />}
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="configurator-manual">
+                  {variantes && variantes.dimensoes.length > 0 && <p className="configurator-muted">Ou digite uma dimensão:</p>}
+                  <Input placeholder="Ex: 800x700x600" value={dimensaoSel} onChange={(e) => setDimensaoSel(e.target.value)} />
+                </div>
+              </>
             )}
           </div>
         )}

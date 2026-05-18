@@ -34,6 +34,39 @@ type ProductConfiguratorProps = {
   onEdicaoConcluida: () => void;
 };
 
+type DimensaoParts = {
+  largura: string;
+  altura: string;
+  profundidade: string;
+};
+
+function parseDimensaoParts(value: string): DimensaoParts {
+  const cleaned = value
+    .trim()
+    .replaceAll("×", "x")
+    .replaceAll("X", "x")
+    .replace(/\s+/g, "");
+
+  if (!cleaned) return { largura: "", altura: "", profundidade: "" };
+
+  const parts = cleaned.split("x").filter(Boolean);
+  const [largura, altura, profundidade] = parts;
+  return {
+    largura: largura ?? "",
+    altura: altura ?? "",
+    profundidade: profundidade ?? "",
+  };
+}
+
+function formatDimensaoParts(parts: DimensaoParts): string {
+  const largura = parts.largura.trim();
+  const altura = parts.altura.trim();
+  const profundidade = parts.profundidade.trim();
+
+  const pieces = [largura, altura, profundidade].filter(Boolean);
+  return pieces.join("x");
+}
+
 function canAdvance(etapa: Etapa, produto: ProdutoCatalogo | null, dimensao: string, cor: string): boolean {
   if (etapa === "produto") return Boolean(produto);
   if (etapa === "dimensao") return Boolean(dimensao.trim());
@@ -69,6 +102,7 @@ export function ProductConfigurator({
   const [variantes, setVariantes] = useState<VariantesProduto | null>(null);
   const [carregandoVar, setCarregandoVar] = useState(false);
   const [dimensaoSel, setDimensaoSel] = useState("");
+  const [dimensaoParts, setDimensaoParts] = useState<DimensaoParts>({ largura: "", altura: "", profundidade: "" });
   const [corSel, setCorSel] = useState("");
   const [quantidade, setQuantidade] = useState(1);
   const [salvando, setSalvando] = useState(false);
@@ -80,6 +114,15 @@ export function ProductConfigurator({
   } | null>(null);
 
   const etapaIdx = useMemo(() => ETAPAS.findIndex((e) => e.id === etapa), [etapa]);
+
+  useEffect(() => {
+    const parsed = parseDimensaoParts(dimensaoSel);
+    const same =
+      parsed.largura === dimensaoParts.largura &&
+      parsed.altura === dimensaoParts.altura &&
+      parsed.profundidade === dimensaoParts.profundidade;
+    if (!same) setDimensaoParts(parsed);
+  }, [dimensaoSel, dimensaoParts.altura, dimensaoParts.largura, dimensaoParts.profundidade]);
 
   useEffect(() => {
     if (!itemEmEdicao) return;
@@ -135,6 +178,7 @@ export function ProductConfigurator({
     setProdutoSel(produto);
     setVariantes(null);
     setDimensaoSel("");
+    setDimensaoParts({ largura: "", altura: "", profundidade: "" });
     setCorSel("");
     setEtapa("dimensao");
 
@@ -197,6 +241,7 @@ export function ProductConfigurator({
         setProdutoSel(null);
         setVariantes(null);
         setDimensaoSel("");
+        setDimensaoParts({ largura: "", altura: "", profundidade: "" });
         setCorSel("");
         setQuantidade(1);
         setEtapa("produto");
@@ -354,7 +399,48 @@ export function ProductConfigurator({
 
                 <div className="configurator-manual">
                   {variantes && variantes.dimensoes.length > 0 && <p className="configurator-muted">Ou digite uma dimensão:</p>}
-                  <Input placeholder="Ex: 800x700x600" value={dimensaoSel} onChange={(e) => setDimensaoSel(e.target.value)} />
+                  <div className="configurator-dimensoes">
+                    <label className="configurator-dimensao-field">
+                      <span className="configurator-label">Largura</span>
+                      <Input
+                        inputMode="numeric"
+                        placeholder="Ex: 800"
+                        value={dimensaoParts.largura}
+                        onChange={(e) => {
+                          const next = { ...dimensaoParts, largura: e.target.value };
+                          setDimensaoParts(next);
+                          setDimensaoSel(formatDimensaoParts(next));
+                        }}
+                      />
+                    </label>
+                    <label className="configurator-dimensao-field">
+                      <span className="configurator-label">Altura</span>
+                      <Input
+                        inputMode="numeric"
+                        placeholder="Ex: 700"
+                        value={dimensaoParts.altura}
+                        onChange={(e) => {
+                          const next = { ...dimensaoParts, altura: e.target.value };
+                          setDimensaoParts(next);
+                          setDimensaoSel(formatDimensaoParts(next));
+                        }}
+                      />
+                    </label>
+                    <label className="configurator-dimensao-field">
+                      <span className="configurator-label">Profundidade</span>
+                      <Input
+                        inputMode="numeric"
+                        placeholder="Ex: 600"
+                        value={dimensaoParts.profundidade}
+                        onChange={(e) => {
+                          const next = { ...dimensaoParts, profundidade: e.target.value };
+                          setDimensaoParts(next);
+                          setDimensaoSel(formatDimensaoParts(next));
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <p className="configurator-muted">Formato: <strong>{dimensaoSel || "—"}</strong></p>
                 </div>
               </>
             )}

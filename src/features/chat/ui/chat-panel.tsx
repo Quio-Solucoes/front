@@ -25,13 +25,9 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
   const setProjectEnvironment = useProjectsStore((state) => state.setProjectEnvironment);
   const environmentSuggestions = useMemo(
     () =>
-      Array.from(
-        new Set(
-          projects
-            .map((p) => p.environment)
-            .filter((v): v is string => Boolean(v && v.trim())),
-        ),
-      ).sort((a, b) => a.localeCompare(b, "pt-BR")),
+      Array.from(new Set(projects.map((p) => p.environment).filter((v): v is string => Boolean(v && v.trim())))).sort(
+        (a, b) => a.localeCompare(b, "pt-BR"),
+      ),
     [projects],
   );
 
@@ -54,10 +50,12 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
                 {project
                   ? [project.client ? `Cliente: ${project.client}` : null, project.architect ? `Arquiteto: ${project.architect}` : null]
                       .filter(Boolean)
-                      .join(" • ") || "Conversa"
-                  : "Carregando conversa..."}
+                      .join(" • ") || "Orçamento"
+                  : "Carregando orçamento..."}
               </p>
-              <span className="chat-status">{hasEnvironment ? `Ambiente: ${project?.environment}` : "Defina o ambiente para começar"}</span>
+              <span className="chat-status">
+                {hasEnvironment ? `Ambiente: ${project?.environment}` : "Defina o ambiente para começar"}
+              </span>
             </div>
           </div>
 
@@ -80,11 +78,7 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
                 ))}
               </nav>
 
-              <select
-                value={vistaAtual}
-                onChange={(e) => setVistaAtual(e.target.value)}
-                className="vista-select vista-select--mobile"
-              >
+              <select value={vistaAtual} onChange={(e) => setVistaAtual(e.target.value)} className="vista-select vista-select--mobile">
                 {VISTAS.map((v) => (
                   <option key={v.id} value={v.id}>
                     {v.label}
@@ -97,8 +91,8 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
 
         {!project ? (
           <Card>
-            <h2 className="page-title">Conversa não encontrada</h2>
-            <p className="page-subtitle">Volte para projetos e crie uma nova conversa.</p>
+            <h2 className="page-title">Orçamento não encontrado</h2>
+            <p className="page-subtitle">Volte para orçamentos e crie um novo.</p>
           </Card>
         ) : !hasEnvironment ? (
           <Card className="environment-card">
@@ -153,3 +147,4 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
     </div>
   );
 }
+

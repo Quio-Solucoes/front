@@ -8,7 +8,6 @@ import {
   FolderKanban,
   LogOut,
   Menu,
-  MessageCircle,
   Moon,
   Settings,
   Sun,
@@ -22,8 +21,7 @@ type AppShellProps = {
 };
 
 const NAV_ITEMS = [
-  { href: "/", label: "Projetos", icon: FolderKanban },
-  { href: "/chat", label: "Chat", icon: MessageCircle },
+  { href: "/orcamentos", label: "Orçamentos", icon: FolderKanban },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

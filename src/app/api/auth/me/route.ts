@@ -4,16 +4,15 @@ import { resolveBackendBaseUrl } from "@/shared/config/backend";
 const BACKEND_BASE_URL = resolveBackendBaseUrl();
 
 export async function GET(request: Request) {
-  const requestUrl = new URL(request.url);
-  const targetUrl = `${BACKEND_BASE_URL}/catalogo${requestUrl.search}`;
   const authorization = request.headers.get("authorization") ?? "";
 
-  const response = await fetch(targetUrl, {
+  const response = await fetch(`${BACKEND_BASE_URL}/auth/me`, {
     method: "GET",
     headers: authorization ? { Authorization: authorization } : undefined,
     cache: "no-store",
   });
-  const data = await response.json();
 
+  const data = await response.json();
   return NextResponse.json(data, { status: response.status });
 }
+

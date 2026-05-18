@@ -16,7 +16,9 @@ async function proxy(
   const requestUrl = new URL(request.url);
   const targetUrl = `${BACKEND_BASE_URL}/catalogo/${path.join("/")}${requestUrl.search}`;
 
+  const authorization = request.headers.get("authorization") ?? "";
   const headers: HeadersInit = { "Content-Type": "application/json" };
+  if (authorization) headers.Authorization = authorization;
   const init: RequestInit = { method, headers, cache: "no-store" };
 
   if (method !== "GET") {
@@ -53,4 +55,3 @@ export async function PUT(request: Request, context: RouteContext) {
 export async function DELETE(request: Request, context: RouteContext) {
   return proxy(request, context, "DELETE");
 }
-

@@ -17,8 +17,13 @@ export async function GET(
   const { path } = await params;
   const requestUrl = new URL(req.url);
   const target = `${resolveProxyBaseUrl()}/${path.join("/")}${requestUrl.search}`;
+  const authorization = req.headers.get("authorization") ?? "";
 
-  const response = await fetch(target, { method: "GET", cache: "no-store" });
+  const response = await fetch(target, {
+    method: "GET",
+    headers: authorization ? { Authorization: authorization } : undefined,
+    cache: "no-store",
+  });
   const data = await response.arrayBuffer();
 
   return new NextResponse(data, {

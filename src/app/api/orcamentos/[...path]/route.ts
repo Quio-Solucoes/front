@@ -10,17 +10,17 @@ type RouteContext = {
 async function proxy(
   request: Request,
   context: RouteContext,
-  method: "GET" | "POST" | "PUT" | "DELETE",
+  method: "GET" | "PATCH" | "DELETE",
 ) {
   const { path } = await context.params;
   const requestUrl = new URL(request.url);
-  const targetUrl = `${BACKEND_BASE_URL}/catalogo/${path.join("/")}${requestUrl.search}`;
+  const targetUrl = `${BACKEND_BASE_URL}/orcamentos/${path.join("/")}${requestUrl.search}`;
 
   const authorization = request.headers.get("authorization") ?? "";
   const headers: HeadersInit = { "Content-Type": "application/json" };
   if (authorization) headers.Authorization = authorization;
-  const init: RequestInit = { method, headers, cache: "no-store" };
 
+  const init: RequestInit = { method, headers, cache: "no-store" };
   if (method !== "GET") {
     init.body = await request.text();
   }
@@ -44,14 +44,11 @@ export async function GET(request: Request, context: RouteContext) {
   return proxy(request, context, "GET");
 }
 
-export async function POST(request: Request, context: RouteContext) {
-  return proxy(request, context, "POST");
-}
-
-export async function PUT(request: Request, context: RouteContext) {
-  return proxy(request, context, "PUT");
+export async function PATCH(request: Request, context: RouteContext) {
+  return proxy(request, context, "PATCH");
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
   return proxy(request, context, "DELETE");
 }
+

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Button, Card, Input } from "@/shared/ui";
-import { useProjectsStore } from "../model/projects-store";
+import { useOrcamentos } from "../model/use-orcamentos";
 
 type GroupBy = "cliente" | "arquiteto" | "ambiente";
 
@@ -21,9 +21,7 @@ function buildGroupLabel(groupBy: GroupBy, key: string): string {
 
 export function OrcamentosExplorer() {
   const router = useRouter();
-  const projects = useProjectsStore((state) => state.projects);
-  const createProject = useProjectsStore((state) => state.createProject);
-  const deleteProject = useProjectsStore((state) => state.deleteProject);
+  const { projects, createProject, deleteProject, loading, error, suggestions } = useOrcamentos();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [architect, setArchitect] = useState("");
@@ -75,26 +73,12 @@ export function OrcamentosExplorer() {
     return groups.find((g) => g.key === openedGroupKey) ?? null;
   }, [groups, openedGroupKey]);
 
-  const suggestions = useMemo(() => {
-    const architects = Array.from(
-      new Set(projects.map((p) => p.architect).filter((v): v is string => Boolean(v && v.trim()))),
-    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
-
-    const clients = Array.from(
-      new Set(projects.map((p) => p.client).filter((v): v is string => Boolean(v && v.trim()))),
-    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
-
-    return { architects, clients };
-  }, [projects]);
-
   return (
     <div className="stack">
       <header className="page-header">
         <div>
           <h1 className="page-title">Orçamentos</h1>
-          <p className="page-subtitle">
-            Organize por cliente, arquiteto ou ambiente e abra o assistente para preencher os itens.
-          </p>
+          <p className="page-subtitle">Organize por cliente, arquiteto ou ambiente e abra o assistente para preencher os itens.</p>
         </div>
         <div className="page-header-actions">
           <div className="kpis">
@@ -108,7 +92,17 @@ export function OrcamentosExplorer() {
         </div>
       </header>
 
-      {projects.length === 0 ? (
+      {error && (
+        <Card>
+          <p className="page-subtitle">{error}</p>
+        </Card>
+      )}
+
+      {loading ? (
+        <Card>
+          <p className="page-subtitle">Carregando orçamentos...</p>
+        </Card>
+      ) : projects.length === 0 ? (
         <div className="empty-projects-state">
           <Card>
             <p className="page-subtitle">Sem orçamentos ainda. Crie o primeiro para começar.</p>
@@ -180,7 +174,11 @@ export function OrcamentosExplorer() {
                       <small>{new Date(project.createdAt).toLocaleDateString("pt-BR")}</small>
                       <div className="row-actions">
                         <Button onClick={() => router.push(`/orcamentos/${project.id}`)}>Abrir orçamento</Button>
-                        <Button variant="danger" onClick={() => deleteProject(project.id)} aria-label="Excluir orçamento">
+                        <Button
+                          variant="danger"
+                          onClick={() => void deleteProject(project.id)}
+                          aria-label="Excluir orçamento"
+                        >
                           <Trash2 size={16} />
                         </Button>
                       </div>
@@ -218,9 +216,9 @@ export function OrcamentosExplorer() {
 
             <form
               className="stack"
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault();
-                const created = createProject({ architect, client });
+                const created = await createProject({ arquiteto: architect, cliente: client });
                 if (!created) return;
                 setArchitect("");
                 setClient("");
@@ -265,3 +263,4 @@ export function OrcamentosExplorer() {
 }
 
 export const ProjectsDashboard = OrcamentosExplorer;
+

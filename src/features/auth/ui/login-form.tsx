@@ -21,7 +21,7 @@ export function LoginForm() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace("/");
+      router.replace("/orcamentos");
     }
   }, [isAuthenticated, router]);
 
@@ -33,13 +33,20 @@ export function LoginForm() {
     try {
       const success = await login(email, password);
       if (!success) {
-        setError("Email e senha sao obrigatorios.");
+        setError("Email ou senha inválidos.");
+        return;
+      }
+
+      const nextFromSession = window.sessionStorage.getItem("quio_auth_next");
+      if (nextFromSession) {
+        window.sessionStorage.removeItem("quio_auth_next");
+        router.replace(nextFromSession);
         return;
       }
 
       const params = new URLSearchParams(window.location.search);
       const next = params.get("next");
-      router.replace(next || "/");
+      router.replace(next || "/orcamentos");
     } finally {
       setLoading(false);
     }

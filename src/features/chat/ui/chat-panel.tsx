@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bot, Layers } from "lucide-react";
 import { SidebarOrcamento } from "@/features/orcamento";
-import { useProjectsStore } from "@/features/projects";
 import { Button, Card, Input } from "@/shared/ui";
 import { ProductConfigurator, type ItemEmEdicao } from "./product-configurator";
+import { getOrcamento, mapOrcamentoToProject, updateOrcamento } from "@/features/projects/api/orcamentos-api";
+import { useOrcamentos } from "@/features/projects";
 
 type ChatPanelProps = {
   projectId: string;
@@ -20,21 +21,47 @@ const VISTAS = [
 ];
 
 export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
-  const projects = useProjectsStore((state) => state.projects);
-  const project = useMemo(() => projects.find((p) => p.id === projectId), [projects, projectId]);
-  const setProjectEnvironment = useProjectsStore((state) => state.setProjectEnvironment);
-  const environmentSuggestions = useMemo(
-    () =>
-      Array.from(new Set(projects.map((p) => p.environment).filter((v): v is string => Boolean(v && v.trim())))).sort(
-        (a, b) => a.localeCompare(b, "pt-BR"),
-      ),
-    [projects],
-  );
+  const { suggestions } = useOrcamentos();
+
+  const [project, setProject] = useState<ReturnType<typeof mapOrcamentoToProject> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingEnv, setLoadingEnv] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [isOrcamentoOpen, setIsOrcamentoOpen] = useState(true);
   const [vistaAtual, setVistaAtual] = useState("frontal");
   const [itemEmEdicao, setItemEmEdicao] = useState<ItemEmEdicao>(null);
   const [ambiente, setAmbiente] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    void (async () => {
+      try {
+        const dto = await getOrcamento(projectId);
+        if (cancelled) return;
+        setProject(mapOrcamentoToProject(dto));
+      } catch (err) {
+        if (cancelled) return;
+        setProject(null);
+        setError(err instanceof Error ? err.message : "Falha ao carregar orçamento");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId]);
+
+  const environmentSuggestions = useMemo(() => {
+    const base = suggestions.environments;
+    const defaults = ["Cozinha", "Sala", "Quarto", "Banheiro", "Escritório", "Lavanderia"];
+    return Array.from(new Set([...base, ...defaults])).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [suggestions.environments]);
 
   const hasEnvironment = Boolean(project?.environment?.trim());
 
@@ -51,15 +78,15 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
                   ? [project.client ? `Cliente: ${project.client}` : null, project.architect ? `Arquiteto: ${project.architect}` : null]
                       .filter(Boolean)
                       .join(" • ") || "Orçamento"
-                  : "Carregando orçamento..."}
+                  : loading
+                    ? "Carregando orçamento..."
+                    : "Orçamento"}
               </p>
-              <span className="chat-status">
-                {hasEnvironment ? `Ambiente: ${project?.environment}` : "Defina o ambiente para começar"}
-              </span>
+              <span className="chat-status">{hasEnvironment ? `Ambiente: ${project?.environment}` : "Defina o ambiente para começar"}</span>
             </div>
           </div>
 
-          {hasEnvironment && (
+          {project && hasEnvironment && (
             <div className="vista-selector" aria-label="Selecionar vista">
               <Layers size={14} />
               <span className="vista-label">Vista:</span>
@@ -89,22 +116,42 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
           )}
         </header>
 
-        {!project ? (
+        {error && (
+          <Card>
+            <h2 className="page-title">Erro</h2>
+            <p className="page-subtitle">{error}</p>
+          </Card>
+        )}
+
+        {!loading && !project ? (
           <Card>
             <h2 className="page-title">Orçamento não encontrado</h2>
             <p className="page-subtitle">Volte para orçamentos e crie um novo.</p>
           </Card>
-        ) : !hasEnvironment ? (
+        ) : project && !hasEnvironment ? (
           <Card className="environment-card">
             <h2 className="page-title">Qual ambiente vamos orçar?</h2>
             <p className="page-subtitle">Ex.: Cozinha, Sala, Quarto, Escritório.</p>
 
             <form
               className="environment-form"
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault();
-                setProjectEnvironment(projectId, ambiente);
-                setAmbiente("");
+                const value = ambiente.trim();
+                if (!value) return;
+
+                setLoadingEnv(true);
+                try {
+                  const updated = await updateOrcamento(projectId, { ambiente: value });
+                  setProject(mapOrcamentoToProject(updated));
+                  setAmbiente("");
+                  setError(null);
+                  window.dispatchEvent(new CustomEvent("orcamentos:refresh"));
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Falha ao salvar ambiente");
+                } finally {
+                  setLoadingEnv(false);
+                }
               }}
             >
               <Input
@@ -112,27 +159,31 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
                 value={ambiente}
                 onChange={(event) => setAmbiente(event.target.value)}
                 list="environment-suggestions"
+                disabled={loadingEnv}
               />
               <datalist id="environment-suggestions">
                 {environmentSuggestions.map((value) => (
                   <option key={value} value={value} />
                 ))}
-                {["Cozinha", "Sala", "Quarto", "Banheiro", "Escritório", "Lavanderia"].map((value) => (
-                  <option key={value} value={value} />
-                ))}
               </datalist>
               <div className="environment-actions">
-                <Button type="submit">Continuar</Button>
+                <Button type="submit" disabled={loadingEnv}>
+                  {loadingEnv ? "Salvando..." : "Continuar"}
+                </Button>
               </div>
             </form>
           </Card>
-        ) : (
+        ) : project ? (
           <ProductConfigurator
             sessionId={projectId}
             vistaAtual={vistaAtual}
             itemEmEdicao={itemEmEdicao}
             onEdicaoConcluida={() => setItemEmEdicao(null)}
           />
+        ) : (
+          <Card>
+            <p className="page-subtitle">Carregando...</p>
+          </Card>
         )}
       </div>
 
@@ -147,4 +198,3 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
     </div>
   );
 }
-

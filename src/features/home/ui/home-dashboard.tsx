@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, FolderKanban, Plus, Timer, TrendingUp } from "lucide-react";
-import { useProjectsStore } from "@/features/projects";
+import { useOrcamentos } from "@/features/projects";
 import { Button, Card, Input } from "@/shared/ui";
 
 const MOCK_MONTHLY = [
@@ -17,8 +17,7 @@ const MOCK_MONTHLY = [
 
 export function HomeDashboard() {
   const router = useRouter();
-  const projects = useProjectsStore((state) => state.projects);
-  const createProject = useProjectsStore((state) => state.createProject);
+  const { projects, createProject, loading, error, suggestions } = useOrcamentos();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [architect, setArchitect] = useState("");
@@ -40,18 +39,6 @@ export function HomeDashboard() {
 
   const recentProjects = useMemo(() => projects.slice(0, 5), [projects]);
 
-  const suggestions = useMemo(() => {
-    const architects = Array.from(
-      new Set(projects.map((p) => p.architect).filter((v): v is string => Boolean(v && v.trim()))),
-    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
-
-    const clients = Array.from(
-      new Set(projects.map((p) => p.client).filter((v): v is string => Boolean(v && v.trim()))),
-    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
-
-    return { architects, clients };
-  }, [projects]);
-
   return (
     <div className="stack">
       <header className="page-header">
@@ -64,6 +51,12 @@ export function HomeDashboard() {
           Novo orçamento
         </Button>
       </header>
+
+      {error && (
+        <Card>
+          <p className="page-subtitle">{error}</p>
+        </Card>
+      )}
 
       <section className="home-kpis">
         <Card>
@@ -117,7 +110,9 @@ export function HomeDashboard() {
 
         <Card>
           <h2 className="home-section-title">Orçamentos recentes</h2>
-          {recentProjects.length === 0 ? (
+          {loading ? (
+            <p className="page-subtitle">Carregando...</p>
+          ) : recentProjects.length === 0 ? (
             <p className="page-subtitle">Nenhum orçamento criado ainda.</p>
           ) : (
             <div className="home-recent-list">
@@ -148,9 +143,9 @@ export function HomeDashboard() {
 
             <form
               className="stack"
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault();
-                const created = createProject({ architect, client });
+                const created = await createProject({ arquiteto: architect, cliente: client });
                 if (!created) return;
                 setArchitect("");
                 setClient("");

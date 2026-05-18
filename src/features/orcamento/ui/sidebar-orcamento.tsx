@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, Download, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { useOrcamento } from "../model/use-orcamento";
+import { downloadOrcamentoPdf } from "../api/pdf-api";
 
 type SidebarOrcamentoProps = {
   sessionId: string;
@@ -28,17 +29,30 @@ const VISTAS_LABELS: Record<string, string> = {
   interna: "Teto / Interna",
 };
 
-function resolvePdfUrl(baseUrl: string | null, sessionId: string): string | null {
-  if (!baseUrl) return null;
-  return `/api/proxy/download-pdf/${encodeURIComponent(sessionId)}`;
-}
-
 export function SidebarOrcamento({ sessionId, open, onToggle, onStartEdit }: Readonly<SidebarOrcamentoProps>) {
-  const { vistas, total, finalizado, backendBaseUrl, loading, removerItemOrcado } = useOrcamento(sessionId);
+  const { vistas, total, finalizado, loading, removerItemOrcado } = useOrcamento(sessionId);
   const [vistaAberta, setVistaAberta] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
-  const pdfUrl = resolvePdfUrl(backendBaseUrl, sessionId);
   const vistaIds = Object.keys(vistas ?? {});
+
+  async function handleDownload() {
+    setDownloading(true);
+    try {
+      const blob = await downloadOrcamentoPdf(sessionId);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `orcamento_${sessionId}.pdf`;
+      link.rel = "noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <aside className={`orcamento-sidebar ${open ? "open" : "closed"}`}>
@@ -116,7 +130,7 @@ export function SidebarOrcamento({ sessionId, open, onToggle, onStartEdit }: Rea
                               className="item-delete"
                               variant="danger"
                               type="button"
-                              onClick={() => removerItemOrcado(item.item_id)}
+                              onClick={() => void removerItemOrcado(item.item_id)}
                             >
                               <Trash2 size={14} />
                               Excluir
@@ -135,16 +149,15 @@ export function SidebarOrcamento({ sessionId, open, onToggle, onStartEdit }: Rea
             <strong>Total:</strong> R$ {total.toFixed(2)}
           </div>
 
-          {vistaIds.length > 0 && pdfUrl && (
-            <a href={pdfUrl} target="_blank" rel="noreferrer">
-              <Button className="download-btn" type="button">
-                <Download size={16} />
-                {finalizado ? "Baixar PDF" : "Gerar PDF"}
-              </Button>
-            </a>
+          {vistaIds.length > 0 && (
+            <Button className="download-btn" type="button" onClick={() => void handleDownload()} disabled={downloading}>
+              <Download size={16} />
+              {downloading ? "Baixando..." : finalizado ? "Baixar PDF" : "Gerar PDF"}
+            </Button>
           )}
         </div>
       )}
     </aside>
   );
 }
+

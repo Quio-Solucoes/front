@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { Card } from "@/shared/ui";
-import { useProjectsStore } from "../model/projects-store";
+import { useOrcamentos } from "../model/use-orcamentos";
 
 export function ProjectsList() {
-  const projects = useProjectsStore((state) => state.projects);
+  const { projects, loading, error } = useOrcamentos();
 
   return (
     <div className="stack">
@@ -16,25 +16,35 @@ export function ProjectsList() {
         </div>
       </header>
 
-      {projects.length === 0 && (
+      {error && (
         <Card>
-          <p className="page-subtitle">Nenhum orçamento disponível.</p>
+          <p className="page-subtitle">{error}</p>
         </Card>
       )}
 
-      <div className="project-grid">
-        {projects.map((project) => (
-          <Card key={project.id}>
-            <h3>{project.client || project.name}</h3>
-            <p>{project.architect ? `Arquiteto: ${project.architect}` : "Sem arquiteto"}</p>
-            <p>{project.environment ? `Ambiente: ${project.environment}` : "Ambiente: não definido"}</p>
-            <small>Status: {project.status}</small>
-            <Link className="text-link" href={`/orcamentos/${project.id}`}>
-              Abrir orçamento
-            </Link>
-          </Card>
-        ))}
-      </div>
+      {loading ? (
+        <Card>
+          <p className="page-subtitle">Carregando orçamentos...</p>
+        </Card>
+      ) : projects.length === 0 ? (
+        <Card>
+          <p className="page-subtitle">Nenhum orçamento disponível.</p>
+        </Card>
+      ) : (
+        <div className="project-grid">
+          {projects.map((project) => (
+            <Card key={project.id}>
+              <h3>{project.client || project.name}</h3>
+              <p>{project.architect ? `Arquiteto: ${project.architect}` : "Sem arquiteto"}</p>
+              <p>{project.environment ? `Ambiente: ${project.environment}` : "Ambiente: não definido"}</p>
+              <small>Status: {project.status}</small>
+              <Link className="text-link" href={`/orcamentos/${project.id}`}>
+                Abrir orçamento
+              </Link>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

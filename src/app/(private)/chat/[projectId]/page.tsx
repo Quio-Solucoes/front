@@ -1,4 +1,4 @@
-import { ChatPanel } from "@/features/chat";
+import { redirect } from "next/navigation";
 
 type ChatPageProps = {
   params: Promise<{ projectId: string }>;
@@ -6,5 +6,6 @@ type ChatPageProps = {
 
 export default async function ChatPage({ params }: ChatPageProps) {
   const { projectId } = await params;
-  return <ChatPanel projectId={projectId} />;
+  redirect(`/orcamentos/${projectId}`);
 }
+

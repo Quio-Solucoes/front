@@ -1,5 +1,5 @@
-import { ProjectsDashboard } from "@/features/projects";
+import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  return <ProjectsDashboard />;
+  redirect("/orcamentos");
 }

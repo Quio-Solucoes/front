@@ -1,28 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import {
-  atualizarComponente,
-  getOrcamento,
-  obterOpcoesComponente,
-  removerMovel,
-} from "../api/orcamento-api";
-import { MovelOrcado, OpcaoComponente } from "./orcamento-types";
+import { getOrcamento, removerItem } from "../api/orcamento-api";
+import { ItemOrcado } from "./orcamento-types";
 
 type UseOrcamentoState = {
-  moveis: MovelOrcado[];
+  vistas: Record<string, ItemOrcado[]>;
   total: number;
   finalizado: boolean;
   backendBaseUrl: string | null;
   loading: boolean;
   refresh: () => Promise<void>;
-  removerMovelOrcado: (movelId: number) => Promise<void>;
-  obterOpcoes: (movelId: number, componenteId: number) => Promise<OpcaoComponente[]>;
-  atualizarOpcao: (movelId: number, componenteId: number, opcaoId: string) => Promise<void>;
+  removerItemOrcado: (itemId: number) => Promise<void>;
 };
 
 export function useOrcamento(sessionId: string): UseOrcamentoState {
-  const [moveis, setMoveis] = useState<MovelOrcado[]>([]);
+  const [vistas, setVistas] = useState<Record<string, ItemOrcado[]>>({});
   const [total, setTotal] = useState(0);
   const [finalizado, setFinalizado] = useState(false);
   const [backendBaseUrl, setBackendBaseUrl] = useState<string | null>(null);
@@ -32,7 +25,7 @@ export function useOrcamento(sessionId: string): UseOrcamentoState {
     setLoading(true);
     try {
       const data = await getOrcamento(sessionId);
-      setMoveis(data.moveis ?? []);
+      setVistas(data.vistas ?? {});
       setTotal(data.total ?? 0);
       setFinalizado(Boolean(data.finalizado));
       setBackendBaseUrl(data.backend_base_url ?? null);
@@ -41,26 +34,9 @@ export function useOrcamento(sessionId: string): UseOrcamentoState {
     }
   }, [sessionId]);
 
-  const removerMovelOrcado = useCallback(
-    async (movelId: number) => {
-      await removerMovel(sessionId, movelId);
-      await refresh();
-    },
-    [refresh, sessionId],
-  );
-
-  const obterOpcoes = useCallback(
-    async (movelId: number, componenteId: number) => {
-      const data = await obterOpcoesComponente(sessionId, movelId, componenteId);
-      if (data.backend_base_url) setBackendBaseUrl(data.backend_base_url);
-      return data.opcoes ?? [];
-    },
-    [sessionId],
-  );
-
-  const atualizarOpcao = useCallback(
-    async (movelId: number, componenteId: number, opcaoId: string) => {
-      await atualizarComponente(sessionId, movelId, componenteId, opcaoId);
+  const removerItemOrcado = useCallback(
+    async (itemId: number) => {
+      await removerItem(sessionId, itemId);
       await refresh();
     },
     [refresh, sessionId],
@@ -83,14 +59,12 @@ export function useOrcamento(sessionId: string): UseOrcamentoState {
   }, [refresh, sessionId]);
 
   return {
-    moveis,
+    vistas,
     total,
     finalizado,
     backendBaseUrl,
     loading,
     refresh,
-    removerMovelOrcado,
-    obterOpcoes,
-    atualizarOpcao,
+    removerItemOrcado,
   };
 }

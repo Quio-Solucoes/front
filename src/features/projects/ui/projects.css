@@ -48,3 +48,179 @@
   justify-content: flex-end;
   gap: var(--space-sm);
 }
+
+.orcamentos-explorer {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.orcamentos-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.orcamentos-toolbar-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.orcamentos-toolbar-tabs {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.orcamentos-tab {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--motion-fast) var(--motion-easing),
+    color var(--motion-fast) var(--motion-easing);
+}
+
+.orcamentos-tab:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.orcamentos-tab.active {
+  background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+  color: var(--brand-strong);
+}
+
+.orcamentos-tab:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 55%, white);
+  outline-offset: 2px;
+}
+
+.orcamentos-groups {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+.orcamentos-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: var(--space-md);
+}
+
+.orcamentos-group-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+.orcamentos-group-count {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+}
+
+.orcamentos-folder-card {
+  position: relative;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  cursor: pointer;
+  display: grid;
+  gap: 6px;
+  transition:
+    background var(--motion-fast) var(--motion-easing),
+    border-color var(--motion-fast) var(--motion-easing),
+    transform var(--motion-fast) var(--motion-easing);
+}
+
+.orcamentos-folder-card:hover {
+  background: var(--surface-soft);
+  border-color: color-mix(in srgb, var(--brand) 25%, var(--line));
+}
+
+.orcamentos-folder-card:active {
+  transform: translateY(1px);
+}
+
+.orcamentos-folder-card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 55%, white);
+  outline-offset: 2px;
+}
+
+.orcamentos-folder-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orcamentos-folder-title {
+  margin: 0;
+  padding-right: 40px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.orcamentos-folder-subtitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.orcamentos-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.orcamentos-back {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.orcamentos-back:hover {
+  background: var(--surface-soft);
+}
+
+.orcamentos-crumb {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.orcamentos-group-badge {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  background: var(--surface);
+}

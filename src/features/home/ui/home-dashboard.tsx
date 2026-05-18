@@ -21,7 +21,7 @@ export function HomeDashboard() {
   const createProject = useProjectsStore((state) => state.createProject);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [name, setName] = useState("");
+  const [architect, setArchitect] = useState("");
   const [client, setClient] = useState("");
 
   const summary = useMemo(() => {
@@ -40,16 +40,28 @@ export function HomeDashboard() {
 
   const recentProjects = useMemo(() => projects.slice(0, 5), [projects]);
 
+  const suggestions = useMemo(() => {
+    const architects = Array.from(
+      new Set(projects.map((p) => p.architect).filter((v): v is string => Boolean(v && v.trim()))),
+    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+    const clients = Array.from(
+      new Set(projects.map((p) => p.client).filter((v): v is string => Boolean(v && v.trim()))),
+    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+    return { architects, clients };
+  }, [projects]);
+
   return (
     <div className="stack">
       <header className="page-header">
         <div>
           <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle">Visão geral da conta e desempenho dos projetos.</p>
+          <p className="page-subtitle">Visão geral da conta e desempenho dos orçamentos.</p>
         </div>
         <Button onClick={() => setIsCreateOpen(true)}>
           <Plus size={16} />
-          Novo projeto
+          Novo orçamento
         </Button>
       </header>
 
@@ -57,7 +69,7 @@ export function HomeDashboard() {
         <Card>
           <div className="home-kpi-head">
             <FolderKanban size={18} />
-            <span>Total de projetos</span>
+            <span>Total de orçamentos</span>
           </div>
           <strong className="home-kpi-value">{summary.total}</strong>
         </Card>
@@ -86,7 +98,7 @@ export function HomeDashboard() {
 
       <section className="home-grid">
         <Card>
-          <h2 className="home-section-title">Projetos criados por mês (mock)</h2>
+          <h2 className="home-section-title">Orçamentos criados por mês (mock)</h2>
           <div className="home-bars">
             {MOCK_MONTHLY.map((item) => (
               <div key={item.month} className="home-bar-col">
@@ -94,7 +106,7 @@ export function HomeDashboard() {
                   <div
                     className="home-bar"
                     style={{ height: `${Math.max(12, item.created * 12)}px` }}
-                    aria-label={`${item.created} projetos em ${item.month}`}
+                    aria-label={`${item.created} orçamentos em ${item.month}`}
                   />
                 </div>
                 <span>{item.month}</span>
@@ -104,21 +116,21 @@ export function HomeDashboard() {
         </Card>
 
         <Card>
-          <h2 className="home-section-title">Projetos recentes</h2>
+          <h2 className="home-section-title">Orçamentos recentes</h2>
           {recentProjects.length === 0 ? (
-            <p className="page-subtitle">Nenhum projeto criado ainda.</p>
+            <p className="page-subtitle">Nenhum orçamento criado ainda.</p>
           ) : (
             <div className="home-recent-list">
               {recentProjects.map((project) => (
                 <button
                   key={project.id}
                   className="home-recent-item"
-                  onClick={() => router.push(`/chat/${project.id}`)}
+                  onClick={() => router.push(`/orcamentos/${project.id}`)}
                   type="button"
                 >
                   <div>
-                    <strong>{project.name}</strong>
-                    <p>{project.client || "Sem cliente"}</p>
+                    <strong>{project.client || project.name}</strong>
+                    <p>{project.architect ? `Arquiteto: ${project.architect}` : "Sem arquiteto"}</p>
                   </div>
                   <span>{project.status}</span>
                 </button>
@@ -131,30 +143,43 @@ export function HomeDashboard() {
       {isCreateOpen && (
         <div className="modal-overlay" onClick={() => setIsCreateOpen(false)} role="presentation">
           <Card className="modal-card" onClick={(event) => event.stopPropagation()}>
-            <h2 className="page-title">Novo projeto</h2>
-            <p className="page-subtitle">Preencha os dados para criar um projeto.</p>
+            <h2 className="page-title">Novo orçamento</h2>
+            <p className="page-subtitle">Informe cliente e arquiteto. O ambiente pode ser definido ao abrir o orçamento.</p>
 
             <form
               className="stack"
               onSubmit={(event) => {
                 event.preventDefault();
-                const created = createProject({ name, client });
+                const created = createProject({ architect, client });
                 if (!created) return;
-                setName("");
+                setArchitect("");
                 setClient("");
                 setIsCreateOpen(false);
+                router.push(`/orcamentos/${created.id}`);
               }}
             >
               <Input
-                placeholder="Nome do projeto"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
+                placeholder="Arquiteto"
+                value={architect}
+                onChange={(event) => setArchitect(event.target.value)}
+                list="architect-suggestions-home"
               />
               <Input
-                placeholder="Cliente (opcional)"
+                placeholder="Cliente"
                 value={client}
                 onChange={(event) => setClient(event.target.value)}
+                list="client-suggestions-home"
               />
+              <datalist id="architect-suggestions-home">
+                {suggestions.architects.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+              <datalist id="client-suggestions-home">
+                {suggestions.clients.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
               <div className="modal-actions">
                 <Button type="button" variant="secondary" onClick={() => setIsCreateOpen(false)}>
                   Cancelar
@@ -168,3 +193,4 @@ export function HomeDashboard() {
     </div>
   );
 }
+

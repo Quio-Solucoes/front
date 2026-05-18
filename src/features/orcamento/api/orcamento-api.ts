@@ -1,36 +1,25 @@
 import { httpClient } from "@/shared/api/http-client";
-import {
-  OpcoesComponenteResponse,
-  OrcamentoSnapshot,
-} from "../model/orcamento-types";
+import { OrcamentoSnapshot } from "../model/orcamento-types";
 
 export async function getOrcamento(sessionId: string): Promise<OrcamentoSnapshot> {
   const response = await httpClient.get<OrcamentoSnapshot>(`/orcamento/${sessionId}`);
   return response.data;
 }
 
-export async function removerMovel(sessionId: string, movelId: number): Promise<void> {
-  await httpClient.delete(`/orcamento/${sessionId}/remover/${movelId}`);
+export async function removerItem(sessionId: string, itemId: number): Promise<void> {
+  await httpClient.delete(`/orcamento/${sessionId}/remover/${itemId}`);
 }
 
-export async function obterOpcoesComponente(
+export async function editarItem(
   sessionId: string,
-  movelId: number,
-  componenteId: number,
-): Promise<OpcoesComponenteResponse> {
-  const response = await httpClient.get<OpcoesComponenteResponse>(
-    `/orcamento/${sessionId}/editar-componente/${movelId}/${componenteId}`,
-  );
-  return response.data;
-}
-
-export async function atualizarComponente(
-  sessionId: string,
-  movelId: number,
-  componenteId: number,
-  opcaoId: string,
+  itemId: number,
+  payload: {
+    produto_id: number;
+    dimensao: string;
+    cor: string;
+    quantidade: number;
+    vista_id: string;
+  },
 ): Promise<void> {
-  await httpClient.post(`/orcamento/${sessionId}/atualizar-componente/${movelId}/${componenteId}`, {
-    opcao_id: opcaoId,
-  });
+  await httpClient.put(`/orcamento/${sessionId}/editar-item/${itemId}`, payload);
 }

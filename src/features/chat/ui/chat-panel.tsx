@@ -192,7 +192,10 @@ export function ChatPanel({ projectId }: Readonly<ChatPanelProps>) {
           sessionId={projectId}
           open={isOrcamentoOpen}
           onToggle={() => setIsOrcamentoOpen((prev) => !prev)}
-          onStartEdit={(payload) => setItemEmEdicao(payload)}
+          onStartEdit={(payload) => {
+            setVistaAtual(payload.vistaId);
+            setItemEmEdicao(payload);
+          }}
         />
       )}
     </div>
